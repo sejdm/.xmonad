@@ -1,0 +1,16 @@
+Vector smash protection is enabled.
+Vector smash protection is enabled.
+[34m[06:46:53.285164 Info][0m Starting up...
+[34m[06:46:53.398928 Info][0m [35m[UILauncher][0m Binding activation to <Control>space
+[32m[06:46:53.398949 GtkHotkey-Debug][0m Listener Type: GtkHotkeyX11Listener
+[34m[06:46:53.413746 Info][0m [35m[GuiViewDefault][0m Screen is NOT composited.
+[34m[06:46:53.413882 Info][0m [35m[GuiViewDefault][0m Using ibus input method.
+[31m[06:46:53.443524 Warning][0m desktop-file-service.vala:303: Desktop session type is not recognized, assuming GNOME.
+[31m[06:46:53.459853 Warning][0m [35m[DesktopFileInfo][0m Unable to create AppInfo
+[31m[06:46:53.460319 Warning][0m [35m[DesktopFileInfo][0m Unable to create AppInfo
+[31m[06:46:53.461056 Warning][0m [35m[DesktopFileInfo][0m Unable to create AppInfo
+[31m[06:46:53.485977 Warning][0m [35m[DesktopFileInfo][0m Key file contains key 'Terminal' which has a value that cannot be interpreted.
+[31m[06:46:53.491414 Warning][0m [35m[DesktopFileInfo][0m Unable to get exec for Photos lens for Unity
+[31m[06:46:53.503518 Warning][0m [35m[DesktopFileInfo][0m Unable to create AppInfo
+[31m[06:46:53.505434 Warning][0m [35m[DesktopFileInfo][0m Unable to get exec for Evolution Data Server
+[34m[06:46:53.791143 Info][0m [35m[HybridSearchPlugin][0m keeps in cache now 2203 file names

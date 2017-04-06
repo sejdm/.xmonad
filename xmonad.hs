@@ -13,6 +13,7 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Fullscreen
 import XMonad.Layout.Minimize
 import XMonad.Layout.ResizableTile
+import XMonad.Actions.WindowBringer
 
 import Graphics.X11.ExtraTypes.XF86
 
@@ -33,7 +34,8 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "terminology"
+myTerminal      = "st tmux 2>/dev/null"
+
 
 -- Width of the window border in pixels.
 --
@@ -93,16 +95,22 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
+    -- Print screen
+    , ((0, xK_Print), spawn "gnome-screenshot -i")
+
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
+    , ((modm , xK_g     ), gotoMenu)
+    , ((modm , xK_b     ), bringMenu)
  -- sudo apt get install zenity wmctrl sdcv xsel xclip feh xcowsay qalc
     -- save a tweet in a journal
      --, ((controlMask .|. shiftMask, xK_t     ), spawn "entry=$(yad --center --entry --text 'Tweet?') && echo '**' $(date '+[%Y-%m-%d %a %H:%M]') $entry >> ~/journal.org")
-     , myOneLiner xK_t "entry=$(yad --center --entry --text 'Reminder?' --width=500) && (echo $entry | ( read first rest; sleep $((first)) && echo $rest | (yad --on-top --no-buttons --wrap --center --text-info --width=400 --fontname='inconsolata 12' --height=50; exit 0)  || xcowsay 'huh?') )"
+     --, myOneLiner xK_t "entry=$(yad --center --entry --text 'Reminder?' --width=500) && (echo $entry | ( read first rest; sleep $((first)) && echo $rest | (yad --on-top --no-buttons --wrap --center --text-info --width=400 --fontname='inconsolata 12' --height=50; exit 0)  || xcowsay 'huh?') )"
+     , myOneLiner xK_t "notify-send \"$(date)\""
 
     -- save clippings
     , myOneLiner xK_c "echo - $(date '+[%Y-%m-%d %a %H:%M]') $(xclip -selection 'primary' -o) >> ~/clippings.org"
@@ -130,12 +138,13 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
      , myOneLiner xK_d "entry=$(yad --center --entry --text='Word?') && (dict \"$entry\" ; echo ; echo ; sdcv -n \"$entry\") | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750"
 
    -- Play video
-      , myOneLiner xK_v "mpv -fs \"$(yad --center --filename=/home/shane/Videos/ --file --maximized)\""
+     , myOneLiner xK_o "mpv -fs \"/home/shane/Videos$(find -iname '*.mp4' | sed 's#^.##' | dmenu -i -l 20)\""
 
    -- Display poems
-       , myOneLiner xK_p "entry=$(yad --center --entry --text='Word?') && (cat \"/home/shane/Documents/Poems/$(ls /home/shane/Documents/Poems | grep -i \"$entry\")\") | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750"
+       --, myOneLiner xK_p "entry=$(yad --center --entry --text='Word?') && (cat \"/home/shane/Documents/Poems/$(ls /home/shane/Documents/Poems | grep -i \"$entry\")\") | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750"
 
-      , myOneLiner xK_o "entry=$(yad --center --filename=/home/shane/Documents/Poems/ --file --width=700 --center --on-top --maximized) && (cat \"$entry\" | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750)"
+      --, myOneLiner xK_o "entry=$(yad --center --filename=/home/shane/Documents/Poems/ --file --width=700 --center --on-top --maximized) && (cat \"$entry\" | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750)"
+      , myOneLiner xK_p "entry=$(ls /home/shane/Documents/Poems | dmenu -i -l 20) && (cat \"/home/shane/Documents/Poems/$entry\" | yad --on-top --no-buttons --wrap --center --text-info --width=700 --height=750)"
 
   -- Check the weather of Pune
      , myOneLiner xK_w "wget -q -O- wttr.in/pune | sed 's/\\x1b\\[[0-9;]*m//g' | yad --on-top --no-buttons --wrap --center --text-info --width=1010 --height=750"
@@ -143,22 +152,33 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   -- set url as max wallpaper
      , myOneLiner xK_a "feh --bg-max $(xsel -b -o)"
 
-     , myFnKey xF86XK_AudioPlay "echo 'pause'>/home/shane/mplayerfifo"
+     , myOneLiner xK_m "(cd ~/Music; youtube-dl -x --audio-format mp3 --add-metadata \"$(xclip -o)\" && notify-send \"Youtube music downloaded\" || notify-send \"Youtube music download FAILED\")"
+     
+     , myOneLiner xK_v "(cd ~/Videos; youtube-dl --add-metadata \"$(xclip -o)\" && notify-send \"Youtube video downloaded\" || notify-send \"Youtube video download FAILED\")"
+
+     , myOneLiner xK_i "notify-send \"$(mpc current)\""
+
+     --, myFnKey xF86XK_AudioPlay "echo 'pause'>/home/shane/mplayerfifo"
+     , myFnKey xF86XK_AudioPlay "mpc toggle"
      --, myFnKey xF86XK_AudioPlay "/usr/bin/feh /home/shane/wallpaper.png"
 
      , myFnKey xF86XK_AudioMute "echo 'mute'>/home/shane/mplayerfifo"
 
-     , myFnKey xF86XK_AudioLowerVolume "echo 'volume -1'>/home/shane/mplayerfifo"
+     --, myFnKey xF86XK_AudioLowerVolume "echo 'volume -1'>/home/shane/mplayerfifo"
+     , myFnKey xF86XK_AudioLowerVolume "mpc volume -1"
 
-     , myFnKey xF86XK_AudioRaiseVolume "echo 'volume +1'>/home/shane/mplayerfifo"
+     --, myFnKey xF86XK_AudioRaiseVolume "echo 'volume +1'>/home/shane/mplayerfifo"
+     , myFnKey xF86XK_AudioRaiseVolume "mpc volume +1"
 
-     , myFnKey xF86XK_AudioNext "echo 'pt_step 1'>/home/shane/mplayerfifo"
+     --, myFnKey xF86XK_AudioNext "echo 'pt_step 1'>/home/shane/mplayerfifo"
+     , myFnKey xF86XK_AudioNext "mpc next"
 
-     , myFnKey xF86XK_AudioPrev "echo 'pt_step -1'>/home/shane/mplayerfifo"
+     --, myFnKey xF86XK_AudioPrev "echo 'pt_step -1'>/home/shane/mplayerfifo"
+     , myFnKey xF86XK_AudioPrev "mpc prev"
 
-     , myFnKey xF86XK_MonBrightnessUp "xbacklight +5"
+     , myFnKey xF86XK_MonBrightnessUp "xbacklight +1"
 
-     , myFnKey xF86XK_MonBrightnessDown "xbacklight -5"
+     , myFnKey xF86XK_MonBrightnessDown "xbacklight -1"
 
 
     -- close focused window
@@ -319,7 +339,10 @@ myLayout = minimize $ onWorkspaces [browserWorkspace, experimentsWorkspace] (myF
 myManageHook = composeAll
     [ -- className =? "MPlayer"        --> doFloat
       className =? "Gimp"           --> doFloat
+    , className =? "Main.py"          --> doFloat
     , className =? "Guake"          --> doFloat
+    , className =? "Guake!"          --> doFloat
+    , className =? "guake"          --> doFloat
     , className =? "Zenity"          --> doFloat
     , className =? "GV"          --> doFloat
     , className =? "Xmessage"          --> doFloat
@@ -361,6 +384,7 @@ myLogHook' xmproc = dynamicLogWithPP xmobarPP
 myStartupHook = do spawn "xmodmap /home/shane/.capsesc"
                    spawn "firefox"
                    spawn "guake"
+                   spawn "/home/shane/bin/wallpaper"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
